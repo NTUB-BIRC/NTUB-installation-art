@@ -87,7 +87,6 @@ def main():
                 break
 
     close(cap, gui)
-    input('press any key to exit......')
 
 
 if __name__ == '__main__':
