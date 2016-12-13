@@ -1,17 +1,27 @@
 # import
-import numpy
 import cv2
+import numpy
 from time import sleep
+from myGUI import ShowResultGUI
+
+
+DEBUG = False
 
 
 def init():
     cap = cv2.VideoCapture(0)  # 宣告攝影機
-    z = numpy.zeros(640)
-    numpy.set_printoptions(threshold=numpy.nan)
-    return z, cap
+    z = numpy.zeros(640)  # 製造 640 個 0 的陣列
+    if DEBUG:
+        numpy.set_printoptions(threshold=numpy.nan)
+        # 設定 print numpy array 時會全部 print 出來，不會省略
+
+    gui = ShowResultGUI()
+    gui.start()
+
+    return z, cap, gui
 
 
-def identification(z, cap):
+def identification(z, cap, gui):
     # 啟用攝影機
     _, frame = cap.read()
     # 讀取攝影機影像
@@ -32,12 +42,14 @@ def identification(z, cap):
 
     # 如果超過 100 個點，就印 y 不然印 n
     if count >= 100:
+        gui.change_text('紅燈')  # change gui text
         print('y')
     else:
+        gui.change_text('綠燈')  # change gui text
         print('n')
 
     # 將抓到的東西顯示出來
-    cv2.imshow('f', frame)
+    cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
     cv2.imshow('res', res)
 
@@ -49,26 +61,33 @@ def identification(z, cap):
         return True
 
 
-def close(cap):
+def close(cap, gui):
     # 釋放所有的資源
     cv2.destroyAllWindows()
     cap.release()
+    gui.close()
 
 
 def main():
-    z, cap = init()
+    z, cap, gui = init()
     while True:
         try:
-            r = identification(z, cap)
+            r = identification(z, cap, gui)
         except KeyboardInterrupt as k:
-            print('break by user')
+            print('\nbreak by user')
+            break
+        except RuntimeError:
+            print('\nGUI close by user')
             break
         except Exception as e:
             raise e
         else:
             if not r:
+                print('\nbreak by user')
                 break
-    close(cap)
+
+    close(cap, gui)
+    input('press any key to exit......')
 
 
 if __name__ == '__main__':
