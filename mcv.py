@@ -3,8 +3,7 @@ import numpy
 import cv2
 from time import sleep
 
-# 宣告攝影機
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # 宣告攝影機
 z = numpy.zeros(640)
 
 numpy.set_printoptions(threshold=numpy.nan)
@@ -44,10 +43,6 @@ while True:
     if k == 27:
         break
 
-    # 每 10 秒更新一次
-    print('sleeping......')
-    sleep(10)
-    print('wake up~')
 
 # 釋放所有的資源
 cv2.destroyAllWindows()
