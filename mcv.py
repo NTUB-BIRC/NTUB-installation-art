@@ -5,17 +5,29 @@ import numpy as np
 import argparse
 import imutils
 import cv2
+import numpy
+from time import sleep
+from myGUI import ShowResultGUI
 
-# 宣告攝影機
-cap = cv2.VideoCapture(0)
-z = np.zeros(640)
 
-# np.set_printoptions(threshold=np.nan)
+DEBUG = False
 
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+def init():
+    cap = cv2.VideoCapture(0)  # 宣告攝影機
+    z = numpy.zeros(640)  # 製造 640 個 0 的陣列
+    hog = cv2.HOGDescriptor()
+    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+    if DEBUG:
+        numpy.set_printoptions(threshold=numpy.nan)
+        # 設定 print numpy array 時會全部 print 出來，不會省略
 
-while True:
+    gui = ShowResultGUI()
+    gui.start()
+
+    return z, cap, gui, hog
+
+
+def identification(z, cap, gui, hog):
     # 啟用攝影機
     _, frame = cap.read()
     # 讀取攝影機影像
@@ -29,7 +41,7 @@ while True:
     # 將 mask 中的白色部份套回原來的顏色，其餘部份維持黑色
     res = cv2.bitwise_and(frame, frame, mask=mask)
     count = 0
-
+    # 計算有多少點
     for dot in mask:
         if np.any(np.not_equal(dot, z)):
             count += 1
@@ -53,15 +65,52 @@ while True:
         #     cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
         if np.any(rects):
             print('detect red human')
+            gui.change_text('紅燈')
             cv2.imshow("After NMS", image)
+    else:
+        print('not red human')
+        gui.change_text('綠燈')
 
     # 將抓到的東西顯示出來
-    cv2.imshow('f', frame)
+    cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
     cv2.imshow('res', res)
+
+    # 按 Esc 退出
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
-        break
+        return False
+    else:
+        return True
 
-cv2.destroyAllWindows()
-cap.release()
+
+def close(cap, gui):
+    # 釋放所有的資源
+    cv2.destroyAllWindows()
+    cap.release()
+    gui.close()
+
+
+def main():
+    z, cap, gui, hog = init()
+    while True:
+        try:
+            r = identification(z, cap, gui)
+        except KeyboardInterrupt as k:
+            print('\nbreak by user')
+            break
+        except RuntimeError:
+            print('\nGUI close by user')
+            break
+        except Exception as e:
+            raise e
+        else:
+            if not r:
+                print('\nbreak by user')
+                break
+
+    close(cap, gui)
+
+
+if __name__ == '__main__':
+    main()
