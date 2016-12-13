@@ -1,6 +1,7 @@
 # import
 import numpy
 import cv2
+from time import sleep
 
 # 宣告攝影機
 cap = cv2.VideoCapture(0)
@@ -22,11 +23,12 @@ while True:
     # 將 mask 中的白色部份套回原來的顏色，其餘部份維持黑色
     res = cv2.bitwise_and(frame, frame, mask=mask)
     count = 0
-
+    # 計算有多少點
     for dot in mask:
         if numpy.any(numpy.not_equal(dot, z)):
             count += 1
 
+    # 如果超過 100 個點，就印 y 不然印 n
     if count >= 100:
         print('y')
     else:
@@ -36,9 +38,17 @@ while True:
     cv2.imshow('f', frame)
     cv2.imshow('mask', mask)
     cv2.imshow('res', res)
+
+    # 按 Esc 退出
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
         break
 
+    # 每 10 秒更新一次
+    print('sleeping......')
+    sleep(10)
+    print('wake up~')
+
+# 釋放所有的資源
 cv2.destroyAllWindows()
 cap.release()
