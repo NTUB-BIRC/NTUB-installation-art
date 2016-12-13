@@ -3,12 +3,15 @@ import numpy
 import cv2
 from time import sleep
 
-cap = cv2.VideoCapture(0)  # 宣告攝影機
-z = numpy.zeros(640)
 
-numpy.set_printoptions(threshold=numpy.nan)
+def init():
+    cap = cv2.VideoCapture(0)  # 宣告攝影機
+    z = numpy.zeros(640)
+    numpy.set_printoptions(threshold=numpy.nan)
+    return z, cap
 
-while True:
+
+def identification(z, cap):
     # 啟用攝影機
     _, frame = cap.read()
     # 讀取攝影機影像
@@ -41,9 +44,32 @@ while True:
     # 按 Esc 退出
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
-        break
+        return False
+    else:
+        return True
 
 
-# 釋放所有的資源
-cv2.destroyAllWindows()
-cap.release()
+def close(cap):
+    # 釋放所有的資源
+    cv2.destroyAllWindows()
+    cap.release()
+
+
+def main():
+    z, cap = init()
+    while True:
+        try:
+            r = identification(z, cap)
+        except KeyboardInterrupt as k:
+            print('break by user')
+            break
+        except Exception as e:
+            raise e
+        else:
+            if not r:
+                break
+    close(cap)
+
+
+if __name__ == '__main__':
+    main()
