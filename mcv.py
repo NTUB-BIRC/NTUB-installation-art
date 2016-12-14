@@ -1,16 +1,14 @@
 # import
-from imutils.object_detection import non_max_suppression
-from imutils import paths
-import numpy as np
-import argparse
-import imutils
 import cv2
+import imutils
 import numpy
-from time import sleep
+import numpy as np
 from myGUI import ShowResultGUI
+from imutils.object_detection import non_max_suppression
 
 
 DEBUG = False
+
 
 def init():
     cap = cv2.VideoCapture(0)  # 宣告攝影機
@@ -54,13 +52,15 @@ def identification(z, cap, gui, hog):
         image = imutils.resize(mask, width=min(400, mask.shape[1]))
 
         # detect human
-        (rects, weights) = hog.detectMultiScale(image, winStride=(4, 4),
-		padding=(8, 8), scale=1.05)
+        (rects, weights) = hog.detectMultiScale(image,
+                                                winStride=(4, 4),
+                                                padding=(8, 8),
+                                                scale=1.05)
 
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 
-	# draw the final bounding boxes
+        # draw the final bounding boxes
         # for (xA, yA, xB, yB) in pick:
         #     cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
         if np.any(rects):
