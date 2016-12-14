@@ -58,7 +58,7 @@ def identification(z, cap, gui, hog):
                                                 scale=1.05)
 
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-        pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+        # pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 
         # draw the final bounding boxes
         # for (xA, yA, xB, yB) in pick:
@@ -95,7 +95,7 @@ def main():
     z, cap, gui, hog = init()
     while True:
         try:
-            r = identification(z, cap, gui)
+            r = identification(z, cap, gui, hog)
         except KeyboardInterrupt as k:
             print('\nbreak by user')
             break
