@@ -1,10 +1,9 @@
 # import
 import cv2
 import imutils
-import numpy
 import numpy as np
 from myGUI import ShowResultGUI
-from imutils.object_detection import non_max_suppression
+# from imutils.object_detection import non_max_suppression
 
 
 DEBUG = False
@@ -12,13 +11,14 @@ DEBUG = False
 
 def init():
     cap = cv2.VideoCapture(0)  # 宣告攝影機
-    z = numpy.zeros(640)  # 製造 640 個 0 的陣列
+    z = np.zeros(640)  # 製造 640 個 0 的陣列
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
     if DEBUG:
-        numpy.set_printoptions(threshold=numpy.nan)
         # 設定 print numpy array 時會全部 print 出來，不會省略
+        np.set_printoptions(threshold=np.nan)
 
+    # GUI init and start
     gui = ShowResultGUI()
     gui.start()
 
@@ -46,30 +46,17 @@ def identification(z, cap, gui, hog):
 
     # test red in 100 up row
     if count >= 100:
-        print('red detect')
-
-        # resize
-        image = imutils.resize(mask, width=min(400, mask.shape[1]))
-
-        # detect human
-        (rects, weights) = hog.detectMultiScale(image,
-                                                winStride=(4, 4),
-                                                padding=(8, 8),
-                                                scale=1.05)
-
-        rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-        # pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
-
-        # draw the final bounding boxes
-        # for (xA, yA, xB, yB) in pick:
-        #     cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
-        if np.any(rects):
+        result, image = detect_human(mask, hog)
+        if result and image is not None:
+            cv2.imshow("After NMS", image)  # show red human
             print('detect red human')
-            gui.change_text('紅燈')
-            cv2.imshow("After NMS", image)
+            gui.change_text('出現小紅人')
+        else:
+            print('red detect')
+            gui.change_text('出現紅物體')
     else:
-        print('not red human')
-        gui.change_text('綠燈')
+        print('nothing red')
+        gui.change_text('沒有紅色物體')
 
     # 將抓到的東西顯示出來
     cv2.imshow('frame', frame)
@@ -82,6 +69,30 @@ def identification(z, cap, gui, hog):
         return False
     else:
         return True
+
+
+def detect_human(mask, hog):
+    # resize
+    image = imutils.resize(mask, width=min(400, mask.shape[1]))
+
+    # detect human
+    (rects, weights) = hog.detectMultiScale(image,
+                                            winStride=(4, 4),
+                                            padding=(8, 8),
+                                            scale=1.05)
+
+    rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
+
+    # pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+
+    # draw the final bounding boxes
+    # for (xA, yA, xB, yB) in pick:
+    # cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
+
+    if np.any(rects):
+        return True, image
+    else:
+        return False, None
 
 
 def close(cap, gui):
